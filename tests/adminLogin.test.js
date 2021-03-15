@@ -20,14 +20,14 @@ describe("testing admin /POST login",()=>{
             return User.create(obj)
         })
         .then(data=>{
-            done()
             console.log(data, "masuk create admin success <<<<<<<<<<<<<<<");
-
+            
             //generate token hasil dari create obj
             token = generateToken({
                 id : data.id,
                 email : data.email
             })
+            done()
             
         })
         .catch(done)

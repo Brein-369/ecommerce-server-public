@@ -52,15 +52,55 @@ class adminController {
     }
 
     static addProduct(req, res, next){
-
+        let obj = {
+            name : req.body.name,
+            image_url : req.body.image_url,
+            price : Number(req.body.price),
+            stock : Number(req.body.stock)
+        }
+        Product.create(obj)
+        .then(data=>{
+            res.status(201).json(data)
+        })
+        .catch(err=>{
+            next(err)
+        })
     }
     
     static updateProduct(req, res, next){
-
+        console.log(req.params.id);
+        let obj = {
+            name : req.body.name,
+            image_url : req.body.image_url,
+            price : Number(req.body.price),
+            stock : Number(req.body.stock)
+        }
+        Product.update(obj,{
+            where : {
+                id : Number(req.params.id)
+            },
+            returning : true
+        })
+        .then(data=>{
+            res.status(200).json(data[1][0])
+        })
+        .catch(err=>{
+            next(err)
+        })
     }
     
     static deleteProduct(req, res, next){
-
+        Product.destroy({
+            where : {
+                id : req.params.id
+            }
+        })
+        .then(data=>{
+            res.status(200).json({message : "Product deletion success"})
+        })
+        .catch(err=>{
+            next(err)
+        })
     }
 
 }

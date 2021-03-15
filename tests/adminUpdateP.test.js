@@ -3,10 +3,10 @@ const app = require('../app')
 const {User,Product} = require('../models')
 const {generateToken} = require('../helpers/jwt')
 
-describe("testing admin /POST add",()=>{
+describe("testing admin /PUT update",()=>{
 
     let token
-
+    let idProduct
     beforeAll((done)=>{
         User.destroy({
             where : {}
@@ -33,6 +33,18 @@ describe("testing admin /POST add",()=>{
             })
         })
         .then(()=>{
+            let obj = {
+                name : "sepatu adidaz",
+                image_url : "https://s0.bukalapak.com/img/53971606541/large/data.png",
+                price : 1000000,
+                stock : 500
+            }
+            return Product.create(obj)
+        
+        })
+        .then((dataProduct)=>{
+            //berhasil create product
+            idProduct = dataProduct.id
             done()
         })
         .catch(done)
@@ -40,15 +52,15 @@ describe("testing admin /POST add",()=>{
     })
     
     
-    it("should return response with status code 201",(done)=>{
+    it("should return response with status code 200",(done)=>{
         const body = {
-            name : "sepatu adidas",
+            name : "sepatu adidaya",
             image_url : "https://s0.bukalapak.com/img/53971606541/large/data.png",
-            price : 1000000,
-            stock : 5
+            price : 1234567,
+            stock : 50
         }
         request(app)
-        .post('/products')
+        .put('/products/'+ idProduct)
         .set('access_token', token)
         .send(body)
         .end((err,res)=>{
@@ -56,7 +68,7 @@ describe("testing admin /POST add",()=>{
                 done(err)
             }
             else{
-                expect(res.statusCode).toEqual(201)
+                expect(res.statusCode).toEqual(200)
                 expect(typeof res.body).toEqual("object")
                 expect(res.body).toHaveProperty("id")
                 expect(typeof res.body.id).toEqual("number")
@@ -75,10 +87,11 @@ describe("testing admin /POST add",()=>{
     
 })
 
-describe("testing admin /POST add tidak ada access token",()=>{
+
+describe("testing admin /PUT update tidak ada token",()=>{
 
     let token
-
+    let idProduct
     beforeAll((done)=>{
         User.destroy({
             where : {}
@@ -105,6 +118,18 @@ describe("testing admin /POST add tidak ada access token",()=>{
             })
         })
         .then(()=>{
+            let obj = {
+                name : "sepatu adidaz",
+                image_url : "https://s0.bukalapak.com/img/53971606541/large/data.png",
+                price : 1000000,
+                stock : 500
+            }
+            return Product.create(obj)
+        
+        })
+        .then((dataProduct)=>{
+            //berhasil create product
+            idProduct = dataProduct.id
             done()
         })
         .catch(done)
@@ -114,14 +139,14 @@ describe("testing admin /POST add tidak ada access token",()=>{
     
     it("should return response with status code 401",(done)=>{
         const body = {
-            name : "sepatu adidas",
+            name : "sepatu adidaya",
             image_url : "https://s0.bukalapak.com/img/53971606541/large/data.png",
-            price : 1000000,
-            stock : 5
+            price : 1234567,
+            stock : 50
         }
         request(app)
-        .post('/products')
-        //tidak ada access token
+        .put('/products/'+ idProduct)
+        //access token tidak diberikan
         // .set('access_token', token)
         .send(body)
         .end((err,res)=>{
@@ -132,6 +157,86 @@ describe("testing admin /POST add tidak ada access token",()=>{
                 expect(res.statusCode).toEqual(401)
                 expect(res.body).toHaveProperty('message', "Authorization Error")
                 expect(res.body).toHaveProperty('detail', "Access Token Error")
+
+                done()
+            }
+        })
+    })   
+    
+})
+
+
+
+describe("testing admin /PUT update stock minus",()=>{
+
+    let token
+    let idProduct
+    beforeAll((done)=>{
+        User.destroy({
+            where : {}
+        })
+        .then(()=>{
+            let obj = {
+                email : "admin@mail.com",
+                password : "123456",
+                role : "admin"
+            }
+            return User.create(obj)
+        })
+        .then(data=>{
+            console.log(data, "masuk create admin success <<<<<<<<<<<<<<<");
+
+            //generate token hasil dari create admin
+            token = generateToken({
+                id : data.id,
+                email : data.email
+            })
+            
+            return Product.destroy({
+                where : {}
+            })
+        })
+        .then(()=>{
+            let obj = {
+                name : "sepatu adidaz",
+                image_url : "https://s0.bukalapak.com/img/53971606541/large/data.png",
+                price : 1000000,
+                stock : 500
+            }
+            return Product.create(obj)
+        
+        })
+        .then((dataProduct)=>{
+            //berhasil create product
+            idProduct = dataProduct.id
+            done()
+        })
+        .catch(done)
+
+    })
+    
+    
+    it("should return response with status code 400",(done)=>{
+        const body = {
+            name : "sepatu adidaya",
+            image_url : "https://s0.bukalapak.com/img/53971606541/large/data.png",
+            price : 1234567,
+            stock : -100
+        }
+        request(app)
+        .put('/products/'+ idProduct)
+        .set('access_token', token)
+        .send(body)
+        .end((err,res)=>{
+            if(err){
+                done(err)
+            }
+            else{
+                expect(res.statusCode).toEqual(400)
+                expect(typeof res.body).toEqual("object")
+                expect(res.body).toHaveProperty("theErr")
+                expect(res.body.theErr).toEqual(expect.arrayContaining(['stock minimal 1']))
+
                 done()
             }
         })
@@ -142,70 +247,12 @@ describe("testing admin /POST add tidak ada access token",()=>{
 
 
 
-describe("testing admin /POST add tapi bukan role admin",()=>{
-    // ada access token tapi bukan role admin
-    let token2
-
-    beforeAll((done)=>{
-        User.destroy({
-            where : {}
-        })
-        .then(()=>{
-            let obj = {
-                email : "customer@mail.com",
-                password : "123456"
-            }
-            return User.create(obj)
-        })
-        .then(data=>{
-            token2 = generateToken({
-                id : data.id,
-                email : data.email
-            })
-            
-            return Product.destroy({
-                where : {}
-            })
-        })
-        .then(()=>{
-            done()
-        })
-        .catch(done)
-
-    })
-
-    it("should return response with status code 401",(done)=>{
-        const body = {
-            name : "sepatu adidas",
-            image_url : "https://s0.bukalapak.com/img/53971606541/large/data.png",
-            price : 1000000,
-            stock : 5
-        }
-        request(app)
-        .post('/products')
-        .set('access_token', token2)
-        .send(body)
-        .end((err,res)=>{
-            if(err){
-                done(err)
-            }
-            else{
-                expect(res.statusCode).toEqual(401)
-                expect(typeof res.body).toEqual("object")
-                expect(res.body).toHaveProperty("message", "Authorization Error")
-                expect(res.body).toHaveProperty("detail", "you are not admin")
-                done()
-            }
-        })
-    })
-
-})
 
 
+describe("testing admin /PUT update stock diisi string",()=>{
 
-describe("testing admin /POST add tapi required tidak diisi",()=>{
-    let token2
-
+    let token
+    let idProduct
     beforeAll((done)=>{
         User.destroy({
             where : {}
@@ -214,13 +261,15 @@ describe("testing admin /POST add tapi required tidak diisi",()=>{
             let obj = {
                 email : "admin@mail.com",
                 password : "123456",
-                role :"admin"
+                role : "admin"
             }
             return User.create(obj)
         })
         .then(data=>{
+            console.log(data, "masuk create admin success <<<<<<<<<<<<<<<");
+
             //generate token hasil dari create admin
-            token2 = generateToken({
+            token = generateToken({
                 id : data.id,
                 email : data.email
             })
@@ -230,22 +279,35 @@ describe("testing admin /POST add tapi required tidak diisi",()=>{
             })
         })
         .then(()=>{
+            let obj = {
+                name : "sepatu adidaz",
+                image_url : "https://s0.bukalapak.com/img/53971606541/large/data.png",
+                price : 1000000,
+                stock : 500
+            }
+            return Product.create(obj)
+        
+        })
+        .then((dataProduct)=>{
+            //berhasil create product
+            idProduct = dataProduct.id
             done()
         })
         .catch(done)
 
     })
-
+    
+    
     it("should return response with status code 400",(done)=>{
         const body = {
-            name : "",
+            name : "sepatu adidaya",
             image_url : "https://s0.bukalapak.com/img/53971606541/large/data.png",
-            price : 1000000,
-            stock : 5
+            price : 1234567,
+            stock : "dua ratus"
         }
         request(app)
-        .post('/products')
-        .set('access_token', token2)
+        .put('/products/'+ idProduct)
+        .set('access_token', token)
         .send(body)
         .end((err,res)=>{
             if(err){
@@ -254,21 +316,25 @@ describe("testing admin /POST add tapi required tidak diisi",()=>{
             else{
                 expect(res.statusCode).toEqual(400)
                 expect(typeof res.body).toEqual("object")
-                expect(res.body).toHaveProperty("theErr")
-                expect(res.body.theErr).toEqual(expect.arrayContaining(['name is required']))
+                expect(res.body).toHaveProperty("message", "Bad Request")
+                expect(res.body).toHaveProperty("detail", "invalid input syntax for integer: \"NaN\"")
+
                 done()
             }
         })
-    })
-
-})
+    })   
     
+})
 
 
 
-describe("testing admin /POST add tapi stock diisi minus",()=>{
-    let token2
 
+
+
+describe("testing admin /PUT update price diisi minus",()=>{
+
+    let token
+    let idProduct
     beforeAll((done)=>{
         User.destroy({
             where : {}
@@ -277,13 +343,15 @@ describe("testing admin /POST add tapi stock diisi minus",()=>{
             let obj = {
                 email : "admin@mail.com",
                 password : "123456",
-                role :"admin"
+                role : "admin"
             }
             return User.create(obj)
         })
         .then(data=>{
+            console.log(data, "masuk create admin success <<<<<<<<<<<<<<<");
+
             //generate token hasil dari create admin
-            token2 = generateToken({
+            token = generateToken({
                 id : data.id,
                 email : data.email
             })
@@ -293,22 +361,35 @@ describe("testing admin /POST add tapi stock diisi minus",()=>{
             })
         })
         .then(()=>{
+            let obj = {
+                name : "sepatu adidaz",
+                image_url : "https://s0.bukalapak.com/img/53971606541/large/data.png",
+                price : 1000000,
+                stock : 500
+            }
+            return Product.create(obj)
+        
+        })
+        .then((dataProduct)=>{
+            //berhasil create product
+            idProduct = dataProduct.id
             done()
         })
         .catch(done)
 
     })
-
+    
+    
     it("should return response with status code 400",(done)=>{
         const body = {
-            name : "aaaa",
+            name : "sepatu adidaya",
             image_url : "https://s0.bukalapak.com/img/53971606541/large/data.png",
-            price : -1,
-            stock : 5
+            price : -1234567,
+            stock : 100
         }
         request(app)
-        .post('/products')
-        .set('access_token', token2)
+        .put('/products/'+ idProduct)
+        .set('access_token', token)
         .send(body)
         .end((err,res)=>{
             if(err){
@@ -322,131 +403,6 @@ describe("testing admin /POST add tapi stock diisi minus",()=>{
                 done()
             }
         })
-    })
-
-})
-
-
-
-
-describe("testing admin /POST add tapi price diisi minus",()=>{
-    let token2
-
-    beforeAll((done)=>{
-        User.destroy({
-            where : {}
-        })
-        .then(()=>{
-            let obj = {
-                email : "admin@mail.com",
-                password : "123456",
-                role :"admin"
-            }
-            return User.create(obj)
-        })
-        .then(data=>{
-            //generate token hasil dari create admin
-            token2 = generateToken({
-                id : data.id,
-                email : data.email
-            })
-            
-            return Product.destroy({
-                where : {}
-            })
-        })
-        .then(()=>{
-            done()
-        })
-        .catch(done)
-
-    })
-
-    it("should return response with status code 400",(done)=>{
-        const body = {
-            name : "sepatu",
-            image_url : "https://s0.bukalapak.com/img/53971606541/large/data.png",
-            price : 1000000,
-            stock : -1
-        }
-        request(app)
-        .post('/products')
-        .set('access_token', token2)
-        .send(body)
-        .end((err,res)=>{
-            if(err){
-                done(err)
-            }
-            else{
-                expect(res.statusCode).toEqual(400)
-                expect(typeof res.body).toEqual("object")
-                expect(res.body).toHaveProperty("theErr")
-                expect(res.body.theErr).toEqual(expect.arrayContaining(['stock minimal 1']))
-                done()
-            }
-        })
-    })
-
-})
-
-
-
-describe("testing admin /POST add tapi stock diisi string",()=>{
-    let token2
-
-    beforeAll((done)=>{
-        User.destroy({
-            where : {}
-        })
-        .then(()=>{
-            let obj = {
-                email : "admin@mail.com",
-                password : "123456",
-                role :"admin"
-            }
-            return User.create(obj)
-        })
-        .then(data=>{
-            //generate token hasil dari create admin
-            token2 = generateToken({
-                id : data.id,
-                email : data.email
-            })
-            
-            return Product.destroy({
-                where : {}
-            })
-        })
-        .then(()=>{
-            done()
-        })
-        .catch(done)
-
-    })
-
-    it("should return response with status code 400",(done)=>{
-        const body = {
-            name : "sepatu",
-            image_url : "https://s0.bukalapak.com/img/53971606541/large/data.png",
-            price : 1000000,
-            stock : "dua puluh"
-        }
-        request(app)
-        .post('/products')
-        .set('access_token', token2)
-        .send(body)
-        .end((err,res)=>{
-            if(err){
-                done(err)
-            }
-            else{
-                expect(res.statusCode).toEqual(400)
-                expect(typeof res.body).toEqual("object")
-                expect(res.body).toHaveProperty("message", "Bad Request")
-                expect(res.body).toHaveProperty("detail", "invalid input syntax for integer: \"NaN\"")
-                done()
-            }
-        })
-    })
-
+    })   
+    
 })

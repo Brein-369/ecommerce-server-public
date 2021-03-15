@@ -13,11 +13,11 @@ const authenticate = (req, res, next)=>{
             next()
         })
         .catch(err=>{
-            throw Error()
+            next({name:"401", message :"Authentication Error" })
         })
 
     } catch (error) {
-        next(error)
+        next({name : "401", message :"Access Token Error"})
     }
 }
 
@@ -25,14 +25,11 @@ const authorize = (req, res, next)=>{
 
     User.findByPk(req.currentUser.id)
     .then(data=>{
-        if(data === null){
-            next({name : "404", message: "Admin not available"})
-        }
-        else if (data && data.role === "admin"){
+        if (data && data.role === "admin"){
             next()
         }
-        else{
-            next({name : "401"})
+        else if (data && data.role !== "admin"){
+            next({name : "401", message : "you are not admin"})
         }
     })  
     .catch(err=>{
