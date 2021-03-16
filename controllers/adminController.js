@@ -20,10 +20,21 @@ class adminController {
     }
 
     static login(req, res, next){
-        User.findOne({
-            where : {
-                email : req.body.email
-            }
+        console.log(req.body);
+        //findOne tidak ada validate, proses validate hnaya di create dan update jadi 
+        //harus pake query model build(create instance tp tidak di save) yang ditambah method validate baru bisa cek validasi
+        User.build({
+            email: req.body.email,
+            password: req.body.password
+        }).validate()
+
+        .then(data=>{
+        
+            return User.findOne({
+                where : {
+                    email : req.body.email
+                }
+            })
         })
         .then(data=>{
             if(data && comparePassword(req.body.password, data.password)){
@@ -45,6 +56,16 @@ class adminController {
             else {
                 throw Error()
             }
+        })
+        .catch(err=>{
+            next(err)
+        })
+    }
+
+    static getAllProduct(req,res,next){
+        Product.findAll()
+        .then(data=>{
+            res.status(200).json(data)
         })
         .catch(err=>{
             next(err)

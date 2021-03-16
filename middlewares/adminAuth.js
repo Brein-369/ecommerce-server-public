@@ -2,6 +2,7 @@ const {User, Product} = require('../models')
 const {verifyToken} = require('../helpers/jwt')
 
 const authenticate = (req, res, next)=>{
+    console.log(req.headers);
     try {
         let {id, email} = verifyToken(req.headers.access_token)
         User.findByPk(id)

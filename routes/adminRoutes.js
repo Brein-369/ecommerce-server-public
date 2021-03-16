@@ -7,6 +7,7 @@ router.post('/register', adminController.register)
 router.post('/login', adminController.login)
 
 router.use(authenticate, authorize)
+router.get('/products', adminController.getAllProduct)
 router.post('/products', adminController.addProduct)
 router.put('/products/:id', adminController.updateProduct)
 router.delete('/products/:id', adminController.deleteProduct)

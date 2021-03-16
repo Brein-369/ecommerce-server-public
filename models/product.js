@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      Product.belongsTo(models.Category)
     }
   };
   Product.init({
@@ -48,6 +49,15 @@ module.exports = (sequelize, DataTypes) => {
         min : {
           args : 1,
           msg : "stock minimal 1"
+        }
+      }
+    },
+    CategoryId: {
+      type : DataTypes.STRING,
+      validate :{
+        isAlpha : {
+          args : true,
+          msg : "Category should be in alphabet"
         }
       }
     }
