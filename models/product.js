@@ -54,12 +54,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     CategoryId: {
       type : DataTypes.STRING,
-      validate :{
-        isAlpha : {
-          args : true,
-          msg : "Category should be in alphabet"
-        }
-      }
+      allowNull: true
     }
   }, {
     sequelize,

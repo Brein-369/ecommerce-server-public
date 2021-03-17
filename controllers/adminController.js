@@ -1,4 +1,4 @@
-const {User, Product} = require('../models')
+const {User, Product, Category} = require('../models')
 const {comparePassword} = require('../helpers/bcrypt')
 const {generateToken} = require('../helpers/jwt')
 
@@ -77,11 +77,40 @@ class adminController {
             name : req.body.name,
             image_url : req.body.image_url,
             price : Number(req.body.price),
-            stock : Number(req.body.stock)
+            stock : Number(req.body.stock),
+            CategoryId: Number(req.body.CategoryId)
         }
         Product.create(obj)
         .then(data=>{
             res.status(201).json(data)
+        })
+        .catch(err=>{
+            next(err)
+        })
+    }
+
+    static showEditProduct (req, res, next) {
+        Product.findAll({
+            where: {
+                id : Number(req.params.id)
+            },
+            include: [Category]
+        })
+        .then(data => {
+            res.status(200).json(data[0])
+        }).catch(err => {
+            next(err)
+        })
+    }
+
+    static getAllCategory(req, res, next) {
+        console.log('masuk controller get all category<<<<<<<<<<<<<<');
+        Category.findAll({
+            include: [Product]
+        })
+        .then(data=>{
+            console.log(data);
+            res.status(200).json(data)
         })
         .catch(err=>{
             next(err)
