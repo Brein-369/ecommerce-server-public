@@ -8,6 +8,11 @@ router.post('/login', adminController.login)
 
 router.use(authenticate, authorize)
 router.get('/category', adminController.getAllCategory)
+router.post('/category', adminController.addCategory)
+router.get('/category/:id', adminController.showEditCategory)
+router.patch('/category/:id', adminController.updateCategory)
+router.delete('/category/:id', adminController.deleteCategory)
+
 router.get('/products', adminController.getAllProduct)
 router.post('/products', adminController.addProduct)
 router.get('/products/:id', adminController.showEditProduct)

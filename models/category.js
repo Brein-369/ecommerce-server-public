@@ -20,6 +20,9 @@ module.exports = (sequelize, DataTypes) => {
       validate: {
         isAlpha: {
           msg: 'Category should be in alphabet'
+        },
+        notEmpty: {
+          msg: 'Category name Should not be empty'
         }
       }
     }

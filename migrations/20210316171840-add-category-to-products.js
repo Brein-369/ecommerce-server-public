@@ -10,6 +10,7 @@ module.exports = {
      */
     await queryInterface.addColumn('Products', 'CategoryId', {
       type: Sequelize.INTEGER,
+      //dihapus dulu sebelum migrate test supaya ga error relation waktu add category
       references: {
         model: 'Categories',
         key: 'id'

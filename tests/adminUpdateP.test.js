@@ -57,7 +57,8 @@ describe("testing admin /PUT update",()=>{
             name : "sepatu adidaya",
             image_url : "https://s0.bukalapak.com/img/53971606541/large/data.png",
             price : 1234567,
-            stock : 50
+            stock : 50,
+            CategoryId: 2
         }
         request(app)
         .put('/products/'+ idProduct)

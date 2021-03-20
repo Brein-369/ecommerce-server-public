@@ -48,10 +48,10 @@ class adminController {
                 })
             }
             else if(data && !comparePassword(req.body.password, data.password)){
-                next({name : "401", message : "Invalid Email or Password"})
+                next({name : "400", message : "Invalid Email or Password"})
             }
             else if(req.body.email && !data){
-                next({name : "401", message : "Invalid Email or Password"})
+                next({name : "400", message : "Invalid Email or Password"})
             }
             else {
                 throw Error()
@@ -116,14 +116,70 @@ class adminController {
             next(err)
         })
     }
+
+    static addCategory(req, res, next) {
+        console.log(req.body.name);
+        let obj = {
+            name: req.body.name
+        }
+        Category.create(obj)
+        .then(data=>{
+            res.status(201).json(data)
+        }).catch(err => {
+            next(err)
+        })
+    }
+
+    static showEditCategory(req,res,next){
+        console.log(req.params.id, '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<');
+        Category.findOne({
+            where : {
+                id : req.params.id
+            }
+        }).then(data=>{
+            res.status(200).json(data)
+        }).catch(err=>{
+            next(err)
+        })
+    }
     
+    static updateCategory(req,res,next){
+        console.log(req.body);
+        let obj = {
+            name: req.body.name
+        }
+        Category.update(obj, {
+            where : {
+                id : Number(req.params.id)
+            },
+            returning: true
+        }).then(data=>{
+            res.status(200).json(data[1][0])
+        }).catch(err=>{
+            next(err)
+        })
+    }
+
+    static deleteCategory(req,res,next){
+        Category.destroy({
+            where :{
+                id : Number(req.params.id)
+            }
+        }).then(data=>{
+            res.status(200).json({message: "Category deletion success"})
+        }).catch(err=>{
+            next(err)
+        })
+    }
+
     static updateProduct(req, res, next){
         console.log(req.params.id);
         let obj = {
             name : req.body.name,
             image_url : req.body.image_url,
             price : Number(req.body.price),
-            stock : Number(req.body.stock)
+            stock : Number(req.body.stock),
+            CategoryId: Number(req.body.CategoryId)
         }
         Product.update(obj,{
             where : {
@@ -142,7 +198,7 @@ class adminController {
     static deleteProduct(req, res, next){
         Product.destroy({
             where : {
-                id : req.params.id
+                id : Number(req.params.id)
             }
         })
         .then(data=>{

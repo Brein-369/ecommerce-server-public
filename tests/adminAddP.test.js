@@ -45,7 +45,8 @@ describe("testing admin /POST add",()=>{
             name : "sepatu adidas",
             image_url : "https://s0.bukalapak.com/img/53971606541/large/data.png",
             price : 1000000,
-            stock : 5
+            stock : 5,
+            CategoryId : 1
         }
         request(app)
         .post('/products')
@@ -429,7 +430,8 @@ describe("testing admin /POST add tapi stock diisi string",()=>{
             name : "sepatu",
             image_url : "https://s0.bukalapak.com/img/53971606541/large/data.png",
             price : 1000000,
-            stock : "dua puluh"
+            stock : "dua puluh",
+            CategoryId: 1
         }
         request(app)
         .post('/products')

@@ -7,6 +7,7 @@ const authenticate = (req, res, next)=>{
         let {id, email} = verifyToken(req.headers.access_token)
         User.findByPk(id)
         .then(data=>{
+            //harus ditambah if data dan elsenya jaga2 ada orang punya access_token id lain yang sudah dihapus
             req.currentUser = {
                 id : data.id,
                 email : data.email

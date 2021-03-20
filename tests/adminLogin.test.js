@@ -62,7 +62,7 @@ describe("testing admin /POST login",()=>{
 
 
     // email ada password salah
-    it("should return response with status code 401",(done)=>{
+    it("should return response with status code 400",(done)=>{
         const body = {
             email : "admin@mail.com",
             password : "12345666666"
@@ -75,9 +75,9 @@ describe("testing admin /POST login",()=>{
                 done(err)
             }
             else{
-                expect(res.statusCode).toEqual(401)
+                expect(res.statusCode).toEqual(400)
                 expect(typeof res.body).toEqual("object")
-                expect(res.body).toHaveProperty("message", "Authorization Error")
+                expect(res.body).toHaveProperty("message", "Bad Request")
                 expect(res.body).toHaveProperty("detail", 'Invalid Email or Password')
                 done()
             }
@@ -86,7 +86,7 @@ describe("testing admin /POST login",()=>{
     })
 
     //email tidak ada di db
-    it("should return response with status code 401",(done)=>{
+    it("should return response with status code 400",(done)=>{
         const body = {
             email : "adminnnnnnnn@mail.com",
             password : "123456"
@@ -99,9 +99,9 @@ describe("testing admin /POST login",()=>{
                 done(err)
             }
             else{
-                expect(res.statusCode).toEqual(401)
+                expect(res.statusCode).toEqual(400)
                 expect(typeof res.body).toEqual("object")
-                expect(res.body).toHaveProperty("message", "Authorization Error")
+                expect(res.body).toHaveProperty("message", "Bad Request")
                 expect(res.body).toHaveProperty("detail", 'Invalid Email or Password')
                 done()
             }
