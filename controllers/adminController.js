@@ -146,7 +146,7 @@ class adminController {
     static updateCategory(req,res,next){
         console.log(req.body);
         let obj = {
-            name: req.body.name
+            name: (req.body.name).toString()
         }
         Category.update(obj, {
             where : {

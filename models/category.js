@@ -18,9 +18,6 @@ module.exports = (sequelize, DataTypes) => {
     name: {
       type: DataTypes.STRING,
       validate: {
-        isAlpha: {
-          msg: 'Category should be in alphabet'
-        },
         notEmpty: {
           msg: 'Category name Should not be empty'
         }
