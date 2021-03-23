@@ -15,6 +15,7 @@
     "db:seed:all:development": "NODE_ENV=development npx sequelize db:seed:all",
     "db:seed:undo:all:development": "NODE_ENV=development npx sequelize db:seed:undo:all",
     "db:migrate:development": "NODE_ENV=development npx sequelize db:migrate",
+    "db:migrate:undo:development": "NODE_ENV=development npx sequelize db:migrate:undo",
     "db:migrate:undo:all:development": "NODE_ENV=development npx sequelize db:migrate:undo:all",
     "start": "node bin/http.js",
     "test": "NODE_ENV=test npx jest --detectOpenHandles --forceExit",

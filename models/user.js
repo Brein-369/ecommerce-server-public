@@ -12,6 +12,8 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      User.hasMany(models.Cart)
+
     }
   };
   User.init({
@@ -32,10 +34,25 @@ module.exports = (sequelize, DataTypes) => {
         len :{
           args : [6],
           msg : "Password should be minimal 6 characters"
+        },
+        notEmpty : {
+          msg : "Password should not be empty"
         }
       }
     },
-    role: DataTypes.STRING
+    role: DataTypes.STRING,
+    address: {
+      type: DataTypes.STRING,
+    },
+    phone: {
+      type: DataTypes.STRING,
+      validate:{
+        isNumeric: {
+          args: true,
+          msg : "Phone should be in number"
+        }
+      }
+    }
   }, {
     sequelize,
     modelName: 'User',
