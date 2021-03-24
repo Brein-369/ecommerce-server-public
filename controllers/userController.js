@@ -1,6 +1,6 @@
-const {User, Product, Cart} = require('../models')
+const {User, Product, Wishlist, Cart, sequelize} = require('../models')
 const {comparePassword} = require('../helpers/bcrypt')
-const {generateToken} = require('../helpers/jwt')
+const {generateToken} = require('../helpers/jwt');
 
 class UserController {
 
@@ -86,6 +86,69 @@ class UserController {
             next(err)
         })
     }
+    static userGetAllWishlist (req,res,next){
+        Wishlist.findAll({
+            where: {
+                UserId: req.currentUser.id
+            },
+            include: [Product]
+        })
+        .then(data=>{
+            res.status(200).json(data)
+        })
+        .catch(err=>{
+            next(err)
+        })
+    }
+
+    static userAddWishlist(req,res,next){
+        
+        Wishlist.findOrCreate({
+            where: {
+                UserId : req.currentUser.id,
+                ProductId: req.body.ProductId
+            }
+        })
+        .then(data=>{
+            if (data[1]){
+                res.status(201).json(data)
+            }
+            else {
+                res.status(200).json(data)
+            }
+        })
+        .catch(err=>{
+            next(err)
+        })
+    }
+
+    // static userAddWishlistToCart(req,res,next){
+    //     let obj = {
+            
+    //     }
+    //     Cart.create(obj)
+    //     .then(data=>{
+
+    //     })
+    //     .catch(err=>{
+
+    //     })
+    // }
+
+    static userDeleteWishlist(req,res,next){
+        Wishlist.destroy({
+            where: {
+                id: Number(req.params.id)
+            }
+        })
+        .then(data=>{
+            res.status(200).json({message: "Wishlist Deletion Success"})
+        })
+        .catch(err=>{
+            next(err)
+        })
+    }
+
     static userAddCart(req,res,next){
         Cart.findOrCreate({
             where: {
@@ -97,7 +160,13 @@ class UserController {
             }
         })
         .then(data=>{
-            res.status(200).json(data)
+            // data[1] represent boolean find(false) or create(true)
+            if (data[1]){
+                res.status(201).json(data)
+            }
+            else {
+                res.status(200).json(data)
+            }
         })
         .catch(err=>{
             next(err)
@@ -111,6 +180,7 @@ class UserController {
             }
         })
         .then(data=>{
+            console.log(data);
             res.status(200).json({message: "Adding Cart Quantity Success"})
         })
         .catch(err=>{
@@ -160,35 +230,58 @@ class UserController {
             next(err)
         })
     }
-    // static userCheckout(req,res,next){
-        
-    //     Cart.findOne({
-    //         where: {
-    //             id : req.params.id
-    //         }
-    //     })
-    //     .then(data=>{
-    //         return Product.decrement('stock', {
-    //             by: data.quantity,
-    //             where: {
-    //                 id: data.ProductId
-    //             }
-    //         })
-    //     })
-    //     .then(data=>{
-    //         return Cart.destroy({
-    //             where: {
-    //                 id: req.params.id
-    //             }
-    //         })
-    //     })
-    //     .then(data=>{
-    //         res.status(200).json({message: "Checkout Cart Success"})
-    //     })
-    //     .catch(err=>{
-    //         next(err)
-    //     })
-    // }
+    static async userCheckout(req,res,next){
+        await Cart.findAll({
+            where :{
+                UserId : req.currentUser.id
+            },
+            include : [Product]
+        })
+        .then(data=>{
+            // let totalToBePaid = 0
+            const checkout = async ()=>{
+                for(let i = 0; i< data.length; i++){
+                    try {    
+                        const result = await sequelize.transaction(async (t)=>{
+                                
+                            await Product.decrement('stock', {
+                                by: data[i].quantity,
+                                where: {
+                                    id: data[i].ProductId
+                                },
+                                transaction : t
+                            })
+
+                          
+                            await Cart.destroy({
+                                where: {
+                                    id: data[i].id
+                                },
+                                transaction : t
+                            })
+                            
+                        })
+                        console.log(result, 'result sequelize');
+
+                    } catch (error) {
+                        console.log(error,"<<<<<< error try catch");
+                    }
+                }
+                // console.log(totalToBePaid,"<<<< total tobe paid");
+                // return totalToBePaid
+            }
+            checkout()
+            res.status(200).json({"message": "Checkout Success"})
+
+        })
+        .catch(err=>{
+            next(err)
+        })
+    }
+
+
+
+
 }
 
 module.exports = UserController

@@ -1,4 +1,4 @@
-const {User, Cart, Product} = require('../models')
+const {User, Cart, Product, Wishlist} = require('../models')
 const {verifyToken} = require('../helpers/jwt')
 
 const userAuthenticate = (req,res,next)=>{
@@ -44,7 +44,26 @@ const userAuthorization = (req,res,next)=>{
     })
 }
 
+const userAuthorizationWishlist = (req,res,next)=>{
+    Wishlist.findByPk(req.params.id)
+    .then(data=>{
+        if(data && data.UserId === req.currentUser.id){
+            next()
+        }
+        else if(data && data.UserId !== req.currentUser.id){
+            next({name: "401", message: "User Has no Authorization to this Wishlist"})
+        }
+        else{
+            next({name: "404", message: "Wishlist not found"})
+        }
+    })
+    .catch(err=>{
+        next(err)
+    })
+}
+
 module.exports = {
     userAuthenticate,
-    userAuthorization
+    userAuthorization,
+    userAuthorizationWishlist
 }
