@@ -761,7 +761,14 @@ Response(200-ok)
     "message": "Checkout Success"
 }
 ```
-
+Response(400-Bad Request)
+```
+{
+    "theErr": [
+        'stock minimal 1'
+    ]
+}
+```
 Response(401-Bad Request)
 ```
 {
